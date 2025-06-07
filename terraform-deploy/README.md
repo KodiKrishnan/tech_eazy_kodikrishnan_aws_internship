@@ -143,7 +143,7 @@ terraform destroy -var-file="dev.tfvars"
 
 ## ✍️ Author
 
-**Kodi Arasan M** [kodikrishnan2307@gmail.com] (mailto:kodikrishnan2307@gmail.com) 07-06-2025
+**Kodi Arasan M** [kodikrishnan2307@gmail.com]  07-06-2025
 
 ---
 
