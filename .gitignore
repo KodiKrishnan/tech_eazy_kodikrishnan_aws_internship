@@ -1,0 +1,17 @@
+# Ignore all PEM keys
+*.pem
+
+# Terraform-specific
+terraform-deploy/.terraform/
+terraform-deploy/*.tfstate
+terraform-deploy/*.tfstate.backup
+terraform-deploy/*.tfplan
+
+# Optional: Ignore sensitive var files (if they include secrets)
+#terraform-deploy/dev.tfvars
+#terraform-deploy/prod.tfvars
+
+# Editor & system files
+*.log
+*.swp
+.DS_Store
