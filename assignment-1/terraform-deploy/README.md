@@ -106,7 +106,7 @@ terraform destroy -var-file="dev.tfvars"
 ## 🛠️ Customization
 
 - **Environment configs**: Edit `dev.tfvars` or `prod.tfvars` for region, AMI, instance type, etc.
-- **User data script**: Modify `user-data.sh` for custom build, deployment, or notification logic.
+- **User data script**: Modify `user-data.sh` for  custom build, deployment, or notification logic.
 
 ---
 
