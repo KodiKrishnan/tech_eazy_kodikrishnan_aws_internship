@@ -1,17 +1,32 @@
-# Ignore all PEM keys
-*.pem
+# Terraform state and backup files
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/.terraform/
+**/.terraform.lock.hcl
 
-# Terraform-specific
-terraform-deploy/.terraform/
-terraform-deploy/*.tfstate
-terraform-deploy/*.tfstate.backup
-terraform-deploy/*.tfplan
+# Private keys
+**/*.pem
 
-# Optional: Ignore sensitive var files (if they include secrets)
-#terraform-deploy/dev.tfvars
-#terraform-deploy/prod.tfvars
+# Environment config files
+**/config/*.env
 
-# Editor & system files
+# Local logs
 *.log
-*.swp
+
+# Python cache and environment
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/venv/
+
+# Screenshot or image files
+**/*.png
+**/*.jpg
+
+# Ignore Mac/Linux system files
 .DS_Store
+Thumbs.db
+
+# Ignore any temp or backup files
+*~
+*.swp
