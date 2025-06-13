@@ -55,7 +55,7 @@ jobs:
         run: |
           echo "Waiting for EC2 to boot and app to start..."
           INSTANCE_IP="${{ env.INSTANCE_IP }}"
-          sleep 240  # Initial wait to ensure instance is ready
+          sleep 420  # Initial wait to ensure instance is ready
 
           for i in {1..15}; do
             echo "🔄 Attempt $i: Checking http://$INSTANCE_IP"
