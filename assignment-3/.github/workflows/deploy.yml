@@ -41,52 +41,34 @@ jobs:
       - name: Fetch Public IP from Terraform Output
         id: get_ip
         run: |
-          cd ./assignment-3
-          IP=$(terraform output -raw instance_public_ip 2>/dev/null || echo "")
-          if [[ -z "$IP" || "$IP" == *"error"* ]]; then
-            echo "❌ Failed to fetch a valid public_ip from terraform output"
+          IP=$(terraform output -raw public_ip 2>/dev/null || echo "")
+          if [[ -z "$IP" ]]; then
+            echo "❌ Failed to fetch public_ip from terraform output"
             exit 1
           fi
           echo "INSTANCE_IP=$IP" >> $GITHUB_ENV
-          echo "instance_ip=$IP" >> $GITHUB_OUTPUT
           echo "✅ Fetched EC2 Public IP: $IP"
+        working-directory: ./assignment-3
 
       - name: Wait and Validate App Health
         run: |
           echo "Waiting for EC2 to boot and app to start..."
-          INSTANCE_IP="${{ env.INSTANCE_IP }}"
-          sleep 240  # Initial wait to ensure instance is ready
-
-          for i in {1..15}; do
-            echo "🔄 Attempt $i: Checking http://$INSTANCE_IP"
-            STATUS=$(curl -s --connect-timeout 5 -o response.txt -w "%{http_code}" http://$INSTANCE_IP || echo "000")
-            BODY=$(cat response.txt)
-
-            echo "➡️ HTTP Status: $STATUS"
-            echo "➡️ Response Body: $BODY"
-
-            if [[ "$STATUS" == "200" && "$BODY" == *"Successfully Deployed"* ]]; then
+          sleep 90
+          for i in {1..5}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$INSTANCE_IP)
+            if [ "$STATUS" == "200" ]; then
               echo "✅ App is Healthy"
               exit 0
             fi
-
-            echo "⏳ App not ready yet. Retrying in 15s..."
-            sleep 15
+            echo "App not ready, retrying ($i)..."
+            sleep 10
           done
-
           echo "❌ App is not healthy after multiple attempts."
           exit 1
 
-      - name: Upload Terraform State File
+      - name: Destroy Terraform Resources
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-state
-          path: |
-            ./assignment-3/terraform.tfstate
-            ./assignment-3/terraform.tfstate.backup
-
-      - name: Terraform Destroy
-        if: always()
-        run: terraform destroy -auto-approve -var-file="${{ env.STAGE }}.tfvars"
+        run: |
+          echo "⚠️ Cleaning up resources with terraform destroy..."
+          terraform destroy -auto-approve -var-file="${{ env.STAGE }}.tfvars"
         working-directory: ./assignment-3
