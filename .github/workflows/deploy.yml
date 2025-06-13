@@ -54,18 +54,18 @@ jobs:
       - name: Wait and Validate App Health
         run: |
           echo "Waiting for EC2 to boot and app to start..."
-          INSTANCE_IP="${{ steps.get_ip.outputs.instance_ip }}"
-          sleep 180  # Initial wait
+          INSTANCE_IP="${{ env.INSTANCE_IP }}"
+          sleep 240  # Initial wait to ensure instance is ready
 
-          for i in {1..10}; do
+          for i in {1..15}; do
             echo "🔄 Attempt $i: Checking http://$INSTANCE_IP"
-            STATUS=$(curl -s -o response.txt -w "%{http_code}" http://$INSTANCE_IP)
+            STATUS=$(curl -s --connect-timeout 5 -o response.txt -w "%{http_code}" http://$INSTANCE_IP || echo "000")
+            BODY=$(cat response.txt)
 
             echo "➡️ HTTP Status: $STATUS"
-            echo "➡️ Response Body:"
-            cat response.txt
+            echo "➡️ Response Body: $BODY"
 
-            if [ "$STATUS" == "200" ]; then
+            if [[ "$STATUS" == "200" && "$BODY" == *"Successfully Deployed"* ]]; then
               echo "✅ App is Healthy"
               exit 0
             fi
