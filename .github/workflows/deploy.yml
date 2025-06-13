@@ -48,22 +48,32 @@ jobs:
             exit 1
           fi
           echo "INSTANCE_IP=$IP" >> $GITHUB_ENV
+          echo "instance_ip=$IP" >> $GITHUB_OUTPUT
           echo "✅ Fetched EC2 Public IP: $IP"
 
       - name: Wait and Validate App Health
         run: |
           echo "Waiting for EC2 to boot and app to start..."
-          INSTANCE_IP="${{ env.INSTANCE_IP }}"  # Explicitly set
-          sleep 180 # Wait for 5 minutes for the app to start
-          for i in {1..5}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$INSTANCE_IP)
+          INSTANCE_IP="${{ steps.get_ip.outputs.instance_ip }}"
+          sleep 180  # Initial wait
+
+          for i in {1..10}; do
+            echo "🔄 Attempt $i: Checking http://$INSTANCE_IP"
+            STATUS=$(curl -s -o response.txt -w "%{http_code}" http://$INSTANCE_IP)
+
+            echo "➡️ HTTP Status: $STATUS"
+            echo "➡️ Response Body:"
+            cat response.txt
+
             if [ "$STATUS" == "200" ]; then
               echo "✅ App is Healthy"
               exit 0
             fi
-            echo "App not ready, retrying ($i)..."
-            sleep 10
+
+            echo "⏳ App not ready yet. Retrying in 15s..."
+            sleep 15
           done
+
           echo "❌ App is not healthy after multiple attempts."
           exit 1
 
