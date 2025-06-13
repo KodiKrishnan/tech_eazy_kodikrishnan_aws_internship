@@ -53,7 +53,8 @@ jobs:
       - name: Wait and Validate App Health
         run: |
           echo "Waiting for EC2 to boot and app to start..."
-          sleep 300 # Wait for 5 minutes for the app to start
+          INSTANCE_IP="${{ env.INSTANCE_IP }}"  # Explicitly set
+          sleep 180 # Wait for 5 minutes for the app to start
           for i in {1..5}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$INSTANCE_IP)
             if [ "$STATUS" == "200" ]; then
