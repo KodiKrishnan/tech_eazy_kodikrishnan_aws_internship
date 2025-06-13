@@ -41,14 +41,14 @@ jobs:
       - name: Fetch Public IP from Terraform Output
         id: get_ip
         run: |
+          cd ./assignment-3
           IP=$(terraform output -raw public_ip 2>/dev/null || echo "")
-          if [[ -z "$IP" ]]; then
-            echo "❌ Failed to fetch public_ip from terraform output"
+          if [[ -z "$IP" || "$IP" == *"error"* ]]; then
+            echo "❌ Failed to fetch a valid public_ip from terraform output"
             exit 1
           fi
           echo "INSTANCE_IP=$IP" >> $GITHUB_ENV
           echo "✅ Fetched EC2 Public IP: $IP"
-        working-directory: ./assignment-3
 
       - name: Wait and Validate App Health
         run: |
@@ -66,9 +66,7 @@ jobs:
           echo "❌ App is not healthy after multiple attempts."
           exit 1
 
-      - name: Destroy Terraform Resources
+      - name: Terraform Destroy (Cleanup)
         if: always()
-        run: |
-          echo "⚠️ Cleaning up resources with terraform destroy..."
-          terraform destroy -auto-approve -var-file="${{ env.STAGE }}.tfvars"
+        run: terraform destroy -auto-approve -var-file="${{ env.STAGE }}.tfvars"
         working-directory: ./assignment-3
