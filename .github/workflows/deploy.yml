@@ -53,7 +53,7 @@ jobs:
       - name: Wait and Validate App Health
         run: |
           echo "Waiting for EC2 to boot and app to start..."
-          sleep 90
+          sleep 300 # Wait for 5 minutes for the app to start
           for i in {1..5}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$INSTANCE_IP)
             if [ "$STATUS" == "200" ]; then
@@ -76,5 +76,6 @@ jobs:
             ./assignment-3/terraform.tfstate.backup
 
       - name: Terraform Destroy
+        if: always()
         run: terraform destroy -auto-approve -var-file="${{ env.STAGE }}.tfvars"
         working-directory: ./assignment-3
