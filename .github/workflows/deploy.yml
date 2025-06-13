@@ -66,7 +66,8 @@ jobs:
           echo "❌ App is not healthy after multiple attempts."
           exit 1
 
-      - name: Terraform Destroy (Cleanup)
-        if: always()
-        run: terraform destroy -auto-approve -var-file="${{ env.STAGE }}.tfvars"
-        working-directory: ./assignment-3
+      - name: Upload Terraform State File
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-state
+          path: ./assignment-3/terraform.tfstate
