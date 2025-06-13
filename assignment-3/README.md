@@ -74,7 +74,7 @@ This project automates the provisioning and deployment of a Java web application
 - AWS (EC2, IAM, S3)
 - GitHub Actions
 - Shell Scripting
-- Amazon Linux 2
+- Ubuntu 24.04
 - Java Web Application
 
 ---
