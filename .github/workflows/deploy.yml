@@ -42,7 +42,7 @@ jobs:
         id: get_ip
         run: |
           cd ./assignment-3
-          IP=$(terraform output -raw public_ip 2>/dev/null || echo "")
+          IP=$(terraform output -raw instance_public_ip 2>/dev/null || echo "")
           if [[ -z "$IP" || "$IP" == *"error"* ]]; then
             echo "❌ Failed to fetch a valid public_ip from terraform output"
             exit 1
