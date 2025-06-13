@@ -1,150 +1,95 @@
-# AWS EC2 Java App Deployment with Terraform
+# Assignment 3: Automated Java Application Deployment using Terraform and GitHub Actions
 
-## Overview
+## ✅ Overview
 
-This project demonstrates automated provisioning of an AWS EC2 instance using Terraform, with the following features:
+This project automates the provisioning and deployment of a Java web application using **Terraform** for infrastructure-as-code (IaC) and **GitHub Actions** for CI/CD. It builds on Assignments 1 and 2 by adding full automation, deployment orchestration, and application health validation.
 
-- ✅ Automatic SSH key pair generation (securely handled by Terraform)
-- ✅ Environment-based configuration (Dev, Prod, etc.)
-- ✅ Security group setup for SSH and HTTP access
-- ✅ User data script to:
-  - Install Java 21, Maven, Git, and dependencies
-  - Clone and build a Java application from GitHub
-  - Run the application
-  - Verify site accessibility via the public IP
-  - Schedule automatic shutdown of the instance after 15 minutes if the app is running
-- 🔐 No AWS secrets or keys in code (credentials are read from environment variables or AWS profiles)
-- 📤 Outputs: Public IP and Instance ID
+---
+
+## 🧩 Features
+
+### 1. Infrastructure Provisioning (IaC)
+
+- **Terraform-based provisioning**
+  - EC2 Instance (configurable: instance type, stage, etc.)
+  - S3 Bucket (for storing logs)
+  - IAM Roles and secure instance profile attachment
+- **Parameterization**
+  - Stage-specific variables via `dev.tfvars`, `prod.tfvars`
+  - Fully codified infrastructure components
+
+---
+
+### 2. CI/CD Workflow with GitHub Actions
+
+- Triggered on:
+  - Push to `main`
+  - Tags: `deploy-dev`, `deploy-prod`
+- Dynamic stage detection from tag/branch
+- Passes the appropriate tfvars file to Terraform
+
+---
+
+### 3. Application Deployment Automation
+
+- Automatically:
+  - Provisions EC2 using Terraform
+  - Fetches public IP from Terraform output
+  - SSHes into the instance and runs setup & deployment scripts
+  - Uploads app logs to S3 using IAM role credentials
+
+---
+
+### 4. Application Health Validation
+
+- GitHub Action polls the public IP of EC2 post-deployment
+- Validates if the application responds with HTTP 200 on port 80
+- Retries up to 10 times with configurable delay to ensure startup time
+- Provides real-time feedback in GitHub Action logs
+
+---
+
+## 🚀 Deployment Instructions
+
+### ✅ GitHub Workflow Triggers
+
+- Push to `main` → deploys to **dev**
+- Tag with `deploy-prod` → deploys to **prod**
+
+### ✅ How it works
+
+1. GitHub Action triggers on push/tag.
+2. Terraform initializes and applies infrastructure using the correct stage config.
+3. Public IP of EC2 is fetched.
+4. App is deployed via startup script or SSH.
+5. App health is validated (curl to `http://<EC2_IP>:80`)
+6. Terraform state is uploaded as artifact.
+7. Environment is destroyed using `terraform destroy`.
+
+---
+
+## 🛠 Technologies Used
+
+- Terraform (v1.5.7)
+- AWS (EC2, IAM, S3)
+- GitHub Actions
+- Shell Scripting
+- Amazon Linux 2
+- Java Web Application
 
 ---
 
 ## 📁 Directory Structure
 
-```
+```bash
 .
-├── dev.tfvars
-├── prod.tfvars
-├── main.tf
-├── variables.tf
-├── outputs.tf
-├── user-data.sh
-└── README.md
-```
-
----
-
-## ✅ Prerequisites
-
-- AWS account (Free Tier is sufficient)
-- Terraform v1.2.0 or newer
-- AWS CLI configured (`aws configure`)
-- Git
-
----
-
-## 🚀 Usage
-
-### 1. Clone the Repository
-
-```bash
-git clone <your-repo-url>
-cd <your-repo-directory>
-```
-
-### 2. Export AWS Credentials
-
-Make sure your AWS credentials are set in your environment (do not hardcode in code):
-
-```bash
-export AWS_ACCESS_KEY_ID=your_access_key
-export AWS_SECRET_ACCESS_KEY=your_secret_key
-export AWS_DEFAULT_REGION=us-east-1
-```
-
-Or use an AWS CLI profile (`aws configure --profile my-profile`).
-
-### 3. Initialize Terraform
-
-```bash
-terraform init
-```
-
-### 4. Deploy the Infrastructure
-
-**For Dev environment:**
-
-```bash
-terraform apply -var-file="dev.tfvars"
-```
-
-**For Prod environment:**
-
-```bash
-terraform apply -var-file="prod.tfvars"
-```
-
-### 5. Access the Application
-
-After deployment, Terraform will output the public IP.
-
-Open `http://<public_ip>` in your browser. If the app is running, you will see a "Successfully Deployed" message.
-
-### 6. Automatic Shutdown
-
-If the application is accessible (HTTP 200), the instance will automatically shut down after 15 minutes to save costs.
-
-### 7. Destroy Resources
-
-When finished, clean up to avoid charges:
-
-```bash
-terraform destroy -var-file="dev.tfvars"
-```
-
----
-
-## 🛠️ Customization
-
-- **Environment configs**: Edit `dev.tfvars` or `prod.tfvars` for region, AMI, instance type, etc.
-- **User data script**: Modify `user-data.sh` for custom build, deployment, or notification logic.
-
----
-
-## 🔐 Security Notes
-
-- Never commit your `.pem` private key or AWS credentials to version control.
-- The private key is generated and saved locally for SSH access.
-- All secrets/credentials should be managed via environment variables or AWS profiles.
-
----
-
-## 📄 File Descriptions
-
-| File           | Purpose                                                     |
-| -------------- | ----------------------------------------------------------- |
-| `main.tf`      | Main Terraform configuration (resources, key pair, EC2, SG) |
-| `variables.tf` | Input variable definitions                                  |
-| `outputs.tf`   | Outputs for public IP and instance ID                       |
-| `dev.tfvars`   | Dev environment variables                                   |
-| `prod.tfvars`  | Prod environment variables                                  |
-| `user-data.sh` | User data script for EC2 bootstrapping and app deployment   |
-| `README.md`    | This documentation                                          |
-
----
-
-## 📚 References
-
-- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
-- [AWS EC2 User Data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html)
-- [Amazon Linux Extras](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/amazon-linux-ami-basics.html)
-- [AWS Free Tier](https://aws.amazon.com/free/)
-
----
-
-## ✍️ Author
-
-**Kodi Arasan M**[kodikrishnan2307@gmail.com](mailto:kodikrishnan2307@gmail.com)07-06-2025
-
----
-
-Happy DevOps! 🚀
+├── .github/workflows/
+│   └── deploy.yml             # GitHub Action workflow
+├── assignment-3/
+│   ├── main.tf                # Terraform main configuration
+│   ├── variables.tf           # Variable declarations
+│   ├── outputs.tf             # Outputs (e.g., instance public IP)
+│   ├── dev.tfvars             # Dev environment config
+│   ├── prod.tfvars            # Prod environment config
+│   ├── user-data.sh           # EC2 startup script
+│   └── terraform.tfstate      # Terraform state file (generated)
