@@ -67,7 +67,14 @@ jobs:
           exit 1
 
       - name: Upload Terraform State File
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: terraform-state
-          path: ./assignment-3/terraform.tfstate
+          path: |
+            ./assignment-3/terraform.tfstate
+            ./assignment-3/terraform.tfstate.backup
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve -var-file="${{ env.STAGE }}.tfvars"
+        working-directory: ./assignment-3
